@@ -8,7 +8,7 @@ WORKDIR /app
 COPY . /app
 
 # Install any dependencies specified in requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+# RUN pip install --no-cache-dir -r requirements.txt
 
 # Set environment variables (optional)
 ENV PYTHONUNBUFFERED=1
