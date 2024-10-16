@@ -32,6 +32,15 @@ pipeline {
                 sh "docker build -t ${DOCKER_REPO}:${params.IMAGE_TAG} ."
             }
         }
+        stage('Run Tests') {
+            steps {
+                echo 'Running unit tests...'
+                script {
+                    // Run the Docker container to execute tests
+                    sh 'docker run --rm ${DOCKER_REPO}:${IMAGE_TAG} python -m unittest test.py'
+                }
+            }
+        }
 
         stage('Push Docker Image to DockerHub') {
             when {
