@@ -26,7 +26,13 @@ pipeline {
                 }
             }
         }
-
+        stage('Install Dependencies') {
+            steps {
+                echo 'Installing Python dependencies...'
+                // Ensure Python and pip are installed on the Jenkins agent
+                sh 'pip install -r requirements.txt'
+            }
+        }
         stage('Run Build and Test Pipeline') {
             steps {
                 echo 'Running build and tests...'
