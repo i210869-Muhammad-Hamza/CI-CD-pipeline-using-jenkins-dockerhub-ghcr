@@ -26,6 +26,16 @@ pipeline {
                 }
             }
         }
+        stage('Install Python and Pip') {
+            steps {
+                    echo 'Installing Python and pip...'
+                    sh '''
+                    apt-get update
+                    apt-get install -y python3 python3-pip
+                    '''
+            }
+        }
+
         stage('Install Dependencies') {
             steps {
                 echo 'Installing Python dependencies...'
