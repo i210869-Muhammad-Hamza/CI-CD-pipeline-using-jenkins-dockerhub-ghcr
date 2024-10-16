@@ -2,48 +2,62 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_CREDENTIALS_ID = '2'  // Replace with your credentials ID
-        GITHUB_REPO = 'i210869-muhammad-hamza/test'  // GitHub repo owner/repo name
-        IMAGE_TAG = 'dev'
-        DOCKER_REGISTRY = 'ghcr.io'
+        DOCKER_CREDENTIALS_ID = '2'  // DockerHub credentials ID
+        DOCKER_REPO = 'muhammadhamzacpp/check' // Replace with DockerHub username/repo
+    }
+
+    parameters {
+        booleanParam(name: 'DEPLOY', defaultValue: true, description: 'Enable deployment?')
+        string(name: 'IMAGE_TAG', defaultValue: 'latest', description: 'Tag for the Docker image')
     }
 
     stages {
-        stage('Clone Repository') {
+        stage('Check for Code Changes') {
             steps {
-                echo 'Cloning the GitHub Repository...'
-                git(
-                    branch: 'main',
-                    url: 'https://github.com/i210869-muhammad-hamza/test.git',
-                    credentialsId: '1'
-                )
+                echo 'Checking for code changes...'
+                git url: 'https://github.com/i210869-muhammad-hamza/test.git', branch: 'main'
+                script {
+                    def changes = sh(script: "git diff --name-only HEAD~1 HEAD", returnStdout: true).trim()
+                    if (changes == "") {
+                        error("No code changes detected. Skipping pipeline.")
+                    } else {
+                        echo "Code changes detected:\n${changes}"
+                    }
+                }
             }
         }
-
-        stage('Build Docker Image') {
+        stage('Create Docker Image') {
             steps {
-                echo 'Building the Docker Image...'
+                echo 'Building Docker image...'
+                sh "docker build -t ${DOCKER_REPO}:${params.IMAGE_TAG} ."
+            }
+        }
+        stage('Run Tests') {
+            steps {
+                echo 'Running unit tests...'
                 script {
-                    sh """
-                    docker build -t ${DOCKER_REGISTRY}/${GITHUB_REPO}:${IMAGE_TAG} .
-                    """
+                    // Run the Docker container to execute tests
+                    sh 'docker run --rm ${DOCKER_REPO}:${IMAGE_TAG} python -m unittest test.py'
                 }
             }
         }
 
-        stage('Push Docker Image to GitHub Packages') {
+        stage('Push Docker Image to DockerHub') {
+            when {
+                expression { params.DEPLOY }
+            }
             steps {
-                echo 'Pushing the Docker Image to GitHub Packages...'
+                echo 'Pushing Docker image to DockerHub...'
                 script {
                     withCredentials([usernamePassword(
-                        credentialsId: '1',
-                        usernameVariable: 'GITHUB_USERNAME',
-                        passwordVariable: 'GITHUB_TOKEN'
+                        credentialsId: "${DOCKER_CREDENTIALS_ID}",
+                        usernameVariable: 'DOCKER_USERNAME',
+                        passwordVariable: 'DOCKER_PASSWORD'
                     )]) {
-                        sh '''
-                        echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_USERNAME" --password-stdin
-                        '''
-                        //docker push ${DOCKER_REGISTRY}/${GITHUB_REPO}:${IMAGE_TAG}
+                        sh """
+                        echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+                        docker push ${DOCKER_REPO}:${params.IMAGE_TAG}
+                        """
                     }
                 }
             }
