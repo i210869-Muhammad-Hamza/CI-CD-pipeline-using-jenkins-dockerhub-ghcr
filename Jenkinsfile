@@ -1,5 +1,10 @@
 pipeline {
-    agent any
+    agent{ 
+        docker {
+            image 'python:3.8-slim'
+            args '-u root' // Run container with root privileges
+        }
+    }
 
     environment {
         DOCKER_CREDENTIALS_ID = '2'  // DockerHub credentials ID
