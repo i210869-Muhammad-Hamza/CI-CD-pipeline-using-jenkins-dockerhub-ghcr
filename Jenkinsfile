@@ -15,7 +15,7 @@ pipeline {
         stage('Check for Code Changes') {
             steps {
                 echo 'Checking for code changes...'
-                git url: 'https://github.com/your-repo.git', branch: 'main'
+                git url: 'https://github.com/i210869-muhammad-hamza/test.git', branch: 'main'
                 script {
                     def changes = sh(script: "git diff --name-only HEAD~1 HEAD", returnStdout: true).trim()
                     if (changes == "") {
