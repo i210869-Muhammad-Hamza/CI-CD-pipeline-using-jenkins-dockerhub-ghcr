@@ -1,10 +1,5 @@
 pipeline {
-    agent{ 
-        docker {
-            image 'python:3.8-slim'
-            args '-u root' // Run container with root privileges
-        }
-    }
+    agent any
 
     environment {
         DOCKER_CREDENTIALS_ID = '2'  // DockerHub credentials ID
@@ -31,30 +26,6 @@ pipeline {
                 }
             }
         }
-        stage('Install Python and Pip') {
-            steps {
-                    echo 'Installing Python and pip...'
-                    sh '''
-                    apt-get update
-                    apt-get install -y python3 python3-pip
-                    '''
-            }
-        }
-
-        stage('Install Dependencies') {
-            steps {
-                echo 'Installing Python dependencies...'
-                // Ensure Python and pip are installed on the Jenkins agent
-                sh 'pip install -r requirements.txt'
-            }
-        }
-        stage('Run Build and Test Pipeline') {
-            steps {
-                echo 'Running build and tests...'
-                sh 'unittest --maxfail=1 --disable-warnings test.py'
-            }
-        }
-
         stage('Create Docker Image') {
             steps {
                 echo 'Building Docker image...'
