@@ -37,7 +37,7 @@ pipeline {
                 echo 'Running unit tests...'
                 script {
                     // Run the Docker container to execute tests
-                    sh 'docker run --rm ${DOCKER_REPO}:${IMAGE_TAG} python -m unittest test.py'
+                    sh 'docker run --rm ${DOCKER_REPO}:latest python -m unittest test.py'
                 }
             }
         }
