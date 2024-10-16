@@ -31,19 +31,22 @@ pipeline {
             }
         }
 
-        stage('Push Docker Image to GitHub Packages') {
+        stage('Push Docker Image to DockerHub') {
+            when {
+                expression { params.DEPLOY }
+            }
             steps {
-                echo 'Pushing the Docker Image to GitHub Packages...'
+                echo 'Pushing Docker image to DockerHub...'
                 script {
                     withCredentials([usernamePassword(
-                        credentialsId: '1',
-                        usernameVariable: 'GITHUB_USERNAME',
-                        passwordVariable: 'GITHUB_TOKEN'
+                        credentialsId: "${DOCKER_CREDENTIALS_ID}",
+                        usernameVariable: 'DOCKER_USERNAME',
+                        passwordVariable: 'DOCKER_PASSWORD'
                     )]) {
-                        sh '''
-                        echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_USERNAME" --password-stdin
-                        '''
-                        //docker push ${DOCKER_REGISTRY}/${GITHUB_REPO}:${IMAGE_TAG}
+                        sh """
+                        echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+                        docker push ${DOCKER_REPO}:${params.IMAGE_TAG}
+                        """
                     }
                 }
             }
