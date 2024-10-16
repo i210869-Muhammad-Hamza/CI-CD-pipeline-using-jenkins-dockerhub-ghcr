@@ -30,7 +30,7 @@ pipeline {
         stage('Run Build and Test Pipeline') {
             steps {
                 echo 'Running build and tests...'
-                sh 'pytest --maxfail=1 --disable-warnings test.py'
+                sh 'unittest --maxfail=1 --disable-warnings test.py'
             }
         }
 
